@@ -23,6 +23,8 @@ class MainScreen: UITableViewController {
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
+        
+        //THIS IS THE TEST TO MAKE SURE EVERYTHING IS WORKING
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentationDirectory, in: .userDomainMask))
         self.tableView.delegate = self
