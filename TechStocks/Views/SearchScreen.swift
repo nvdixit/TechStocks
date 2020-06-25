@@ -9,8 +9,9 @@
 import UIKit
 import SwiftyJSON
 import Alamofire
+import CoreData
 
-// Baby class for tying together all three values to each other correctly in SearchScreen.swift only
+//Baby class for tying together all three values to each other correctly in SearchScreen.swift only
 struct Company {
     var sharePrice: Double
     var name: String
@@ -31,15 +32,25 @@ class SearchScreen: UIViewController, UITableViewDataSource, UITableViewDelegate
     
     //Array that holds all the possible companies and prices
     var potentialStocks = [Company]()
+    var existingCompanies = [Stock]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUIColorScheme()
+        
         //Set all UI element delegates and dataSources
         tableView.delegate = self
         tableView.dataSource = self
         searchBar.delegate = self
         
+        let request : NSFetchRequest<Stock> = Stock.fetchRequest()
+        do {
+            existingCompanies = try MainScreen().context.fetch(request)
+        }
+        catch {
+            print("Error fetching data from context: \(error)")
+        }
+        
+        setUIColorScheme()
     }
     
     func setUIColorScheme() {
@@ -52,6 +63,22 @@ class SearchScreen: UIViewController, UITableViewDataSource, UITableViewDelegate
             tableView.separatorColor = UIColor.lightGray
         }
     }
+    
+    //Gets stock prices of all possible companies in the tableView, method only exists for the sake of code readibility
+    /*func getStockPrice(companySymbol: String, companyName: String) {
+        Alamofire.request(self.priceAPIUrlOne + companySymbol + self.priceAPIUrlTwo, method : .get).responseString { response in
+            if(response.result.isSuccess) {
+                let stockJSON : Double = Double(response.result.value ?? "0.0") ?? 0.0
+                let potentialStockToAdd = Company(sharePrice: stockJSON, name: companyName, tickerSymbol: companySymbol)
+                self.potentialStocks.append(potentialStockToAdd)
+                self.tableView.reloadData()
+            }
+            else {
+                print(response)
+            }
+        }
+        self.tableView.reloadData()
+    }*/
     
     //MARK -- TableView DataSource methods 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -85,6 +112,11 @@ class SearchScreen: UIViewController, UITableViewDataSource, UITableViewDelegate
         alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
         
+        if defaults.bool(forKey: "nightMode") {
+            alert.view.tintColor = UIColor.systemOrange
+            alert.view.backgroundColor = UIColor.systemGray
+        }
+        
         alert.addAction(UIAlertAction(title: "Confirm", style: .default, handler: { action in
             switch action.style{
             case .default:
@@ -116,47 +148,27 @@ class SearchScreen: UIViewController, UITableViewDataSource, UITableViewDelegate
     
     //MARK -- SearchBar delegate method to detect typed text
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        
-        potentialStocks.removeAll()
-        
-        if(searchText == "") {
+        if searchText.elementsEqual("") {
             self.potentialStocks.removeAll()
+            self.tableView.reloadData()
         }
-        else {
-            Alamofire.request(searchAPIUrl + searchText, method : .get).responseJSON { response in
-                 
-                 if(response.result.isSuccess){
-                     
-                     let companyInfoJSON : JSON = JSON(response.result.value!)
-                     //ALGORITHM STILL NEEDS WORK (SPAMMING IEX FOR STOCK PRICES) --> LOOK INTO CREATING THE DICTIONARY INITIALLY AND CARVING AWAY UNNCESSARY RESULTS WHILE KEEPING STOCK PRICE
-                     for i in 0..<companyInfoJSON.count {
-                         let companyName = companyInfoJSON[i]["name"].string
-                         let companySymbol = companyInfoJSON[i]["symbol"].string
-                         var sharePrice = 0.0
-                        
-                         Alamofire.request(self.priceAPIUrlOne + companySymbol! + self.priceAPIUrlTwo, method : .get).responseString { response in
-                                        
-                             if(response.result.isSuccess){
-                                 let stockJSON : Double = Double(response.result.value ?? "0.0") ?? 0.0
-                                 sharePrice = stockJSON
-                                 self.tableView.reloadData()
-                             }
-                             else {
-                                 print(response)
-                             }
-                         }
-                        
-                         let potentialStockToAdd = Company(sharePrice: sharePrice, name: companyName!, tickerSymbol: companySymbol!)
-                         self.potentialStocks.append(potentialStockToAdd)
-                         self.tableView.reloadData()
-                     }
-                     self.tableView.reloadData()
-                 }
-                 else {
-                     print(response)
-                 }
-             }
+        
+        Alamofire.request(searchAPIUrl + searchText, method : .get).responseJSON { response in
+            if(response.result.isSuccess){
+                self.potentialStocks.removeAll()
+                let companyInfoJSON : JSON = JSON(response.result.value!)
+                for i in 0..<companyInfoJSON.count {
+                    let companyName = companyInfoJSON[i]["name"].string
+                    let companySymbol = companyInfoJSON[i]["symbol"].string
+                    //self.getStockPrice(companySymbol: companySymbol!, companyName: companyName!)
+                    let tempCompany: Company = Company(sharePrice: 0.0, name: companyName!, tickerSymbol: companySymbol!)
+                    self.potentialStocks.append(tempCompany)
+                    self.tableView.reloadData()
+                }
+            }
+            else {
+                print(response)
+            }
         }
-        self.tableView.reloadData()
     }
 }

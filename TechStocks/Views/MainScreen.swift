@@ -23,8 +23,6 @@ class MainScreen: UITableViewController {
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
-        
-        //THIS IS THE TEST TO MAKE SURE EVERYTHING IS WORKING
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentationDirectory, in: .userDomainMask))
         self.tableView.delegate = self
@@ -35,15 +33,11 @@ class MainScreen: UITableViewController {
         
         for i in 0..<companies.count {
             //HTTP request
-            stockPriceRequest(indexValue: i)
-        }
-        self.tableView.reloadData()
-        
-        for i in 0..<companies.count {
             for j in 0..<companies[i].count {
-                print(companies[i][j].name! + ": " + String(companies[i][j].isFavorite))
+                //stockPriceRequest(row: i, col: j)
             }
         }
+        self.tableView.reloadData()
     }
     
     // MARK -- Custom Methods
@@ -100,21 +94,20 @@ class MainScreen: UITableViewController {
     }
     
     //Master function to request price data from the IEX Cloud API
-    func stockPriceRequest(indexValue: Int) {
+    func stockPriceRequest(row: Int, col: Int) {
         
-        /*Alamofire.request(urlOne + companies[indexValue].stockSymbol! + urlTwo, method : .get).responseString { response in
-                
+        Alamofire.request(urlOne + companies[row][col].stockSymbol! + urlTwo, method : .get).responseString { response in
             if(response.result.isSuccess){
                 let stockJSON : Double = Double(response.result.value ?? "0.0") ?? 0.0
-                self.companies[indexValue].stockPrice = stockJSON
+                self.companies[row][col].stockPrice = stockJSON
                 self.tableView.reloadData()
             }
             else {
                 print(response)
             }
         
-        }*/
-        
+        }
+        self.tableView.reloadData()
     }
     
     //Saves items to persistant storage
@@ -127,6 +120,7 @@ class MainScreen: UITableViewController {
         }
     }
     
+    // MARK -- UI Methods
     // These two methods switch the status bar to dark mode
     override var preferredStatusBarStyle: UIStatusBarStyle {
 
