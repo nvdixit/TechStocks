@@ -8,5 +8,6 @@ target 'TechStocks' do
   # Pods for TechStocks
     pod 'SwiftyJSON'
     pod 'Alamofire'
+    pod 'MarqueeLabel'
 
 end

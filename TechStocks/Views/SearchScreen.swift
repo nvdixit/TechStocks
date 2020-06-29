@@ -148,27 +148,30 @@ class SearchScreen: UIViewController, UITableViewDataSource, UITableViewDelegate
     
     //MARK -- SearchBar delegate method to detect typed text
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
         if searchText.elementsEqual("") {
             self.potentialStocks.removeAll()
             self.tableView.reloadData()
         }
-        
-        Alamofire.request(searchAPIUrl + searchText, method : .get).responseJSON { response in
-            if(response.result.isSuccess){
-                self.potentialStocks.removeAll()
-                let companyInfoJSON : JSON = JSON(response.result.value!)
-                for i in 0..<companyInfoJSON.count {
-                    let companyName = companyInfoJSON[i]["name"].string
-                    let companySymbol = companyInfoJSON[i]["symbol"].string
-                    //self.getStockPrice(companySymbol: companySymbol!, companyName: companyName!)
-                    let tempCompany: Company = Company(sharePrice: 0.0, name: companyName!, tickerSymbol: companySymbol!)
-                    self.potentialStocks.append(tempCompany)
-                    self.tableView.reloadData()
+        else {
+            Alamofire.request(searchAPIUrl + searchText, method : .get).responseJSON { response in
+                if(response.result.isSuccess){
+                    self.potentialStocks.removeAll()
+                    let companyInfoJSON : JSON = JSON(response.result.value!)
+                    for i in 0..<companyInfoJSON.count {
+                        let companyName = companyInfoJSON[i]["name"].string
+                        let companySymbol = companyInfoJSON[i]["symbol"].string
+                        //self.getStockPrice(companySymbol: companySymbol!, companyName: companyName!)
+                        let tempCompany: Company = Company(sharePrice: 0.0, name: companyName!, tickerSymbol: companySymbol!)
+                        self.potentialStocks.append(tempCompany)
+                        self.tableView.reloadData()
+                    }
+                }
+                else {
+                    print(response)
                 }
             }
-            else {
-                print(response)
-            }
+            
         }
     }
 }

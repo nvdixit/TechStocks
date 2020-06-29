@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import MarqueeLabel
 
 class Settings: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
@@ -23,7 +24,7 @@ class Settings: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
     var currencies = ["AUD", "BRL","CAD","CNY","EUR","GBP","HKD","IDR","ILS","INR","JPY","MXN","NOK","NZD","PLN","RON","RUB","SEK","SGD","USD","ZAR"]
     var sortingOptions = ["A-Z", "Z-A", "Highest Share Price", "Lowest Share Price"]
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,6 +33,7 @@ class Settings: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
             darkModeSwitch.setOn(true, animated: false)
             setUIColorScheme(backgroundColor: UIColor.black, textColor: UIColor.white)
         }
+        
     }
     
     //Sets color scheme of UI, Parameters are the colors to set the UI Color

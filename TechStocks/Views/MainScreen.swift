@@ -10,18 +10,25 @@ import UIKit
 import SwiftyJSON
 import Alamofire
 import CoreData
+import MarqueeLabel
+
+class CompanyTableViewCell: UITableViewCell {
+    @IBOutlet weak var companyLabel: MarqueeLabel!
+    @IBOutlet weak var stockPriceLabel: UILabel!
+}
 
 class MainScreen: UITableViewController {
 
     let urlOne = "https://cloud.iexapis.com/stable/stock/"
     let urlTwo = "/quote/close?token=pk_5a71125156c341b2827bdac41dffe4c8&period=annual"
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let context = (UIApplication.shared.delegate as!
+        AppDelegate).persistentContainer.viewContext
+    let defaults = UserDefaults.standard
+
     //1 2D array to hold all companies
     var companies: [[Stock]] = [[Stock]]()
-    
-    let defaults = UserDefaults.standard
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentationDirectory, in: .userDomainMask))
@@ -160,10 +167,12 @@ class MainScreen: UITableViewController {
 
     //Creates and assigns appropriate text values to UITableViewCells
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "StockCell", for:  indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "companyTableViewCell", for:  indexPath) as! CompanyTableViewCell
+    
+        cell.companyLabel!.text = "\(companies[indexPath.section][indexPath.row].stockSymbol!) - \(companies[indexPath.section][indexPath.row].name!)"
+        cell.stockPriceLabel!.text = String(format: "$%.02f", companies[indexPath.section][indexPath.row].stockPrice)
         
-        cell.textLabel?.text = "\(companies[indexPath.section][indexPath.row].stockSymbol!) - \(companies[indexPath.section][indexPath.row].name!)"
-        cell.detailTextLabel?.text = String(format: "$%.02f", companies[indexPath.section][indexPath.row].stockPrice)
+        cell.companyLabel!.restartLabel()
         
         if defaults.bool(forKey: "nightMode") {
             cell.backgroundColor = UIColor.black
